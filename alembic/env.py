@@ -1,5 +1,6 @@
 from logging.config import fileConfig
-from sqlalchemy import engine_from_config
+from sqlalchemy import engine_from_config, create_engine
+from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy import pool
 from alembic import context
 
@@ -16,15 +17,18 @@ config = context.config
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
 fileConfig(config.config_file_name)
+# Combina las metadata de todos los modelos
+from sqlalchemy import MetaData
 
-# Importa tus modelos y la función fileConfig
+target_metadata = MetaData()
+
+# Importa tus modelos y agrega sus tablas a target_metadata
 from student_model import Base as StudentBase
 from salon_model import Base as SalonBase
 from subject_model import Base as SubjectBase
 from attendance_model import Base as AttendanceBase
 
-# Combina las metadata de todos los modelos
-target_metadata = StudentBase.metadata
+target_metadata = target_metadata.merge(StudentBase.metadata)
 target_metadata = target_metadata.merge(SalonBase.metadata)
 target_metadata = target_metadata.merge(SubjectBase.metadata)
 target_metadata = target_metadata.merge(AttendanceBase.metadata)
@@ -60,26 +64,18 @@ def run_migrations_offline() -> None:
 
 
 def run_migrations_online() -> None:
-    """Run migrations in 'online' mode.
-
-    In this scenario we need to create an Engine
-    and associate a connection with the context.
-
-    """
-    connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
-        prefix="sqlalchemy.",
-        poolclass=pool.NullPool,
-    )
+    connectable = create_engine(config.get_main_option("sqlalchemy.url"))
 
     with connectable.connect() as connection:
         context.configure(
-            connection=connection, target_metadata=target_metadata
+            connection=connection,
+            target_metadata=target_metadata
         )
 
         with context.begin_transaction():
             context.run_migrations()
 
+# ...
 
 if context.is_offline_mode():
     run_migrations_offline()
