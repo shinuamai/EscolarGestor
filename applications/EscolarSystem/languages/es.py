@@ -55,7 +55,6 @@
 'Community': 'Comunidad',
 'Components and Plugins': 'Componentes y Plugins',
 'Config.ini': 'Config.ini',
-'Confirm Password': 'Confirm Password',
 'Controller': 'Controlador',
 'Copyright': 'Copyright',
 'Current request': 'Solicitud en curso',
